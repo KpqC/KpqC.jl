@@ -35,8 +35,6 @@ function include_paths(source::String)
 end
 
 function compile_native_library()
-    Sys.iswindows() && error("Windows source builds are not supported yet")
-
     compiler = Base.shell_split(get(ENV, "CC", "cc"))
     isempty(compiler) && error("CC must name a compiler executable")
     sources = sort(filter(
@@ -69,13 +67,14 @@ function compile_native_library()
 
         link_flag = Sys.isapple() ? "-dynamiclib" : "-shared"
         linker_flags = Base.shell_split(get(ENV, "LDFLAGS", ""))
+        system_libraries = Sys.iswindows() ? ["-lm", "-lbcrypt"] : ["-lm"]
         temporary_library = joinpath(build_root, basename(LIBRARY_PATH))
         run(Cmd([
             compiler;
             link_flag;
             objects;
             linker_flags;
-            "-lm";
+            system_libraries;
             "-o";
             temporary_library;
         ]))
