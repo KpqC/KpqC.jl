@@ -2,7 +2,7 @@ using KpqC
 using Test
 
 const MESSAGE = Vector{UInt8}(codeunits("release-manifest:v3"))
-const CONTEXT = Vector{UInt8}(codeunits("kpqc-julia"))
+const CONTEXT = Vector{UInt8}(codeunits("test-suite"))
 
 @testset "metadata" begin
     @test length(signature_algorithms()) == 9
