@@ -38,12 +38,6 @@ jobs:
       fail-fast: false
       matrix:
         group:
-          - aimer/128f
-          - aimer/128s
-          - aimer/192f
-          - aimer/192s
-          - aimer/256f
-          - aimer/256s
           - haetae/mode2
           - haetae/mode3
           - haetae/mode5
@@ -73,6 +67,53 @@ jobs:
       - name: Validate known-answer tests
         env:
           KPQC_KAT_FILTER: ${{ matrix.group }}
+          KPQC_TEST_VECTORS: ${{ github.workspace }}/kpqc-test-vectors
+        run: julia --project=. test/kat.jl
+
+  aimer-known-answer-tests:
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        group:
+          - aimer/128f
+          - aimer/128s
+          - aimer/192f
+          - aimer/192s
+          - aimer/256f
+          - aimer/256s
+        offset:
+          - "0"
+          - "10"
+          - "20"
+          - "30"
+          - "40"
+          - "50"
+          - "60"
+          - "70"
+          - "80"
+          - "90"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: KpqC/kpqc-test-vectors
+          ref: d75490bf824faa4b148cd0b901a2eb13198fe0da
+          path: kpqc-test-vectors
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: "1"
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: false
+      - name: Install dependencies
+        run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: Validate AIMer known-answer tests
+        env:
+          KPQC_KAT_FILTER: ${{ matrix.group }}
+          KPQC_KAT_RECORD_LIMIT: "10"
+          KPQC_KAT_RECORD_OFFSET: ${{ matrix.offset }}
           KPQC_TEST_VECTORS: ${{ github.workspace }}/kpqc-test-vectors
         run: julia --project=. test/kat.jl
 

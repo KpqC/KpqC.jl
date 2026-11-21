@@ -318,7 +318,11 @@ const KEM_CONFIGURATIONS = [
 
 const KAT_FILTER = get(ENV, "KPQC_KAT_FILTER", "all")
 const KAT_RECORD_LIMIT = parse(Int, get(ENV, "KPQC_KAT_RECORD_LIMIT", "100"))
+const KAT_RECORD_OFFSET = parse(Int, get(ENV, "KPQC_KAT_RECORD_OFFSET", "0"))
 1 <= KAT_RECORD_LIMIT <= 100 || error("KPQC_KAT_RECORD_LIMIT must be between 1 and 100")
+0 <= KAT_RECORD_OFFSET < 100 || error("KPQC_KAT_RECORD_OFFSET must be between 0 and 99")
+KAT_RECORD_OFFSET + KAT_RECORD_LIMIT <= 100 ||
+    error("KPQC_KAT_RECORD_OFFSET + KPQC_KAT_RECORD_LIMIT must not exceed 100")
 const SELECTED_SIGNATURE_CONFIGURATIONS = if KAT_FILTER == "all"
     SIGNATURE_CONFIGURATIONS
 elseif KAT_FILTER == "haetae"
@@ -344,7 +348,9 @@ isempty(SELECTED_SIGNATURE_CONFIGURATIONS) && isempty(SELECTED_KEM_CONFIGURATION
     for (algorithm, relative_path, is_haetae, seed_bytes) in SELECTED_SIGNATURE_CONFIGURATIONS
         available_vectors = read_vectors(joinpath(VECTOR_ROOT, relative_path, "kat.rsp"))
         @test length(available_vectors) == 100
-        vectors = available_vectors[1:KAT_RECORD_LIMIT]
+        vectors = available_vectors[
+            (KAT_RECORD_OFFSET + 1):(KAT_RECORD_OFFSET + KAT_RECORD_LIMIT)
+        ]
         for vector in vectors
             state = DRBG(field(vector, "seed"))
             keys = if is_haetae
@@ -394,7 +400,9 @@ isempty(SELECTED_SIGNATURE_CONFIGURATIONS) && isempty(SELECTED_KEM_CONFIGURATION
     for (algorithm, relative_path, key_calls, encapsulation_bytes) in SELECTED_KEM_CONFIGURATIONS
         available_vectors = read_vectors(joinpath(VECTOR_ROOT, relative_path, "kat.rsp"))
         @test length(available_vectors) == 100
-        vectors = available_vectors[1:KAT_RECORD_LIMIT]
+        vectors = available_vectors[
+            (KAT_RECORD_OFFSET + 1):(KAT_RECORD_OFFSET + KAT_RECORD_LIMIT)
+        ]
         for vector in vectors
             state = DRBG(field(vector, "seed"))
             keys = if key_calls == 0

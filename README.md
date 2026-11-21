@@ -127,7 +127,9 @@ KPQC_TEST_VECTORS=../kpqc-test-vectors \
 
 The deterministic entropy used by the KAT harness is internal to the test
 process and is cleared after every operation. Set `KPQC_KAT_FILTER` to a vector
-group such as `aimer/128f`, `haetae`, or `kem` to run a smaller shard.
+group such as `aimer/128f`, `haetae`, or `kem` to run a smaller shard. Use the
+zero-based `KPQC_KAT_RECORD_OFFSET` together with `KPQC_KAT_RECORD_LIMIT` to
+validate a bounded range of the 100 records in each selected group.
 
 ## Security
 
