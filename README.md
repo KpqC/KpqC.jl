@@ -117,6 +117,11 @@ All sizes are in bytes.
 julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
+Push and pull-request CI runs the complete suite on Linux and Windows. macOS
+runs the public API smoke suite plus one known-answer record from every
+parameter set; the complete macOS suite runs weekly and can also be started
+manually.
+
 The optional known-answer suite validates all 1,600 records from the pinned
 [KpqC/kpqc-test-vectors at commit d75490bf824f](https://github.com/KpqC/kpqc-test-vectors/tree/d75490bf824faa4b148cd0b901a2eb13198fe0da):
 

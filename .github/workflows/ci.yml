@@ -17,8 +17,6 @@ jobs:
             julia-version: "1.10"
           - os: ubuntu-latest
             julia-version: "1"
-          - os: macos-latest
-            julia-version: "1"
           - os: windows-latest
             julia-version: "1"
     runs-on: ${{ matrix.os }}
@@ -32,6 +30,22 @@ jobs:
           delete-old-caches: false
       - name: Run tests
         run: julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
+
+  macos-smoke-test:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: "1"
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: false
+      - name: Install dependencies
+        run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: Run smoke tests
+        run: julia --project=. test/smoke.jl
 
   known-answer-tests:
     strategy:
