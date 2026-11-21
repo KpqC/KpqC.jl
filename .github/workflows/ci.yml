@@ -19,6 +19,8 @@ jobs:
             julia-version: "1"
           - os: macos-latest
             julia-version: "1"
+          - os: windows-latest
+            julia-version: "1"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -28,12 +30,30 @@ jobs:
       - uses: julia-actions/cache@v3
         with:
           delete-old-caches: false
-      - name: Build native library
-        run: julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.build()'
       - name: Run tests
-        run: julia --project=. -e 'using Pkg; Pkg.test()'
+        run: julia --project=. -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
 
   known-answer-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        group:
+          - aimer/128f
+          - aimer/128s
+          - aimer/192f
+          - aimer/192s
+          - aimer/256f
+          - aimer/256s
+          - haetae/mode2
+          - haetae/mode3
+          - haetae/mode5
+          - ntruplus/768
+          - ntruplus/864
+          - ntruplus/1152
+          - smaugt/mode1
+          - smaugt/mode3
+          - smaugt/mode5
+          - smaugt/modet
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -50,12 +70,37 @@ jobs:
           delete-old-caches: false
       - name: Install dependencies
         run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
-      - name: Build with deterministic entropy hooks
-        env:
-          KPQC_TEST_ENTROPY: "1"
-        run: julia --project=. deps/build.jl
       - name: Validate known-answer tests
         env:
-          KPQC_TEST_ENTROPY: "1"
+          KPQC_KAT_FILTER: ${{ matrix.group }}
+          KPQC_TEST_VECTORS: ${{ github.workspace }}/kpqc-test-vectors
+        run: julia --project=. test/kat.jl
+
+  portability-known-answer-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: KpqC/kpqc-test-vectors
+          ref: d75490bf824faa4b148cd0b901a2eb13198fe0da
+          path: kpqc-test-vectors
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: "1"
+      - uses: julia-actions/cache@v3
+        with:
+          delete-old-caches: false
+      - name: Install dependencies
+        run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: Validate portable known-answer results
+        env:
+          KPQC_KAT_RECORD_LIMIT: "5"
           KPQC_TEST_VECTORS: ${{ github.workspace }}/kpqc-test-vectors
         run: julia --project=. test/kat.jl

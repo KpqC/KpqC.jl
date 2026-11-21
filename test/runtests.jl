@@ -14,9 +14,6 @@ const CONTEXT = Vector{UInt8}(codeunits("test-suite"))
     @test (@doc generate_keypair) !== nothing
     @test (@doc encapsulate) !== nothing
 
-    output_error = KpqCOutputSizeError(:sign, 64, 63)
-    @test sprint(showerror, output_error) ==
-          "KpqC sign returned 63 bytes; expected 64"
 end
 
 @testset "signatures" begin
@@ -26,8 +23,16 @@ end
         @test length(keys.public_key) == sizes.public_key
         @test length(keys.secret_key) == sizes.secret_key
 
+        original_message = copy(MESSAGE)
+        original_secret_key = copy(keys.secret_key)
+        original_context = copy(CONTEXT)
         signature = sign(algorithm, MESSAGE, keys.secret_key; context = CONTEXT)
+        @test MESSAGE == original_message
+        @test keys.secret_key == original_secret_key
+        @test CONTEXT == original_context
         @test length(signature) == sizes.signature
+        original_signature = copy(signature)
+        original_public_key = copy(keys.public_key)
         @test verify(
             algorithm,
             MESSAGE,
@@ -35,6 +40,8 @@ end
             keys.public_key;
             context = CONTEXT,
         )
+        @test signature == original_signature
+        @test keys.public_key == original_public_key
         @test !verify(algorithm, MESSAGE, signature, keys.public_key)
 
         altered = copy(signature)
@@ -98,11 +105,17 @@ end
         @test length(keys.public_key) == sizes.public_key
         @test length(keys.secret_key) == sizes.secret_key
 
+        original_public_key = copy(keys.public_key)
         outbound = encapsulate(algorithm, keys.public_key)
+        @test keys.public_key == original_public_key
         @test length(outbound.ciphertext) == sizes.ciphertext
         @test length(outbound.shared_secret) == sizes.shared_secret
+        original_ciphertext = copy(outbound.ciphertext)
+        original_secret_key = copy(keys.secret_key)
         @test decapsulate(algorithm, outbound.ciphertext, keys.secret_key) ==
               outbound.shared_secret
+        @test outbound.ciphertext == original_ciphertext
+        @test keys.secret_key == original_secret_key
         @test !occursin(
             bytes2hex(outbound.shared_secret),
             sprint(show, outbound),

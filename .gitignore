@@ -1,6 +1,3 @@
-/deps/build/
-/deps/usr/
-/deps/build.log
 /Manifest.toml
 *.jl.cov
 *.jl.*.cov
