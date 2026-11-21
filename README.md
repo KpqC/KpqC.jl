@@ -8,11 +8,10 @@ distribution from the algorithm authors.
 ## Runtime support
 
 - Julia 1.10 or newer
-- A C11 compiler
-- macOS or Linux
+- Linux, macOS, or Windows
 
-The package bundles its native algorithm sources and builds them locally. It
-does not download native libraries during compilation.
+All supported algorithms are implemented in Julia. Installation does not
+compile or download a native library.
 
 ## Install
 
@@ -27,7 +26,6 @@ root:
 
 ```julia
 pkg> develop .
-pkg> build KpqC
 ```
 
 ## Available schemes
@@ -76,10 +74,8 @@ inbound = decapsulate(
 
 Keys, signatures, ciphertexts, messages, contexts, and shared secrets are
 represented as `Vector{UInt8}` values. Secret values are redacted from the
-default display of `KeyPair` and `EncapsulatedSecret`. Native operation failures
-raise `KpqCError`; unexpected native output lengths raise
-`KpqCOutputSizeError`; invalid argument lengths raise `DimensionMismatch`.
-Invalid signatures return `false`.
+default display of `KeyPair` and `EncapsulatedSecret`. Invalid argument lengths
+raise `DimensionMismatch`; invalid signatures return `false`.
 
 NTRU+ rejects non-canonical public keys and invalid ciphertexts. SMAUG-T uses
 implicit rejection and returns a replacement secret for an invalid ciphertext;
@@ -118,30 +114,32 @@ All sizes are in bytes.
 ## Tests
 
 ```sh
-julia --project=. -e 'using Pkg; Pkg.build(); Pkg.test()'
+julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
 The optional known-answer suite validates all 1,600 records from the pinned
 [KpqC/kpqc-test-vectors at commit d75490bf824f](https://github.com/KpqC/kpqc-test-vectors/tree/d75490bf824faa4b148cd0b901a2eb13198fe0da):
 
 ```sh
-KPQC_TEST_ENTROPY=1 julia --project=. deps/build.jl
-KPQC_TEST_ENTROPY=1 KPQC_TEST_VECTORS=../kpqc-test-vectors \
+KPQC_TEST_VECTORS=../kpqc-test-vectors \
   julia --project=. test/kat.jl
 ```
 
-The KAT build uses a separate Scratch space, so it does not replace the normal
-native library. Deterministic entropy hooks are available only when
-`KPQC_TEST_ENTROPY=1` is set.
+The deterministic entropy used by the KAT harness is internal to the test
+process and is cleared after every operation. Set `KPQC_KAT_FILTER` to a vector
+group such as `aimer/128f`, `haetae`, or `kem` to run a smaller shard.
 
 ## Security
 
-The native cores are compiled from the upstream reference implementations.
-This package has not received an independent security audit and does not
-guarantee constant-time execution. Julia-managed secret byte arrays are not
-guaranteed to be scrubbed when reclaimed. Assess these constraints before using
-the package with sensitive production keys. Equality comparisons on secret byte
-arrays are not guaranteed to run in constant time.
+Please report suspected vulnerabilities privately as described in
+[SECURITY.md](SECURITY.md).
+
+The Julia implementations follow the upstream reference algorithms. This
+package has not received an independent security audit and does not guarantee
+constant-time execution. Julia-managed secret byte arrays are not guaranteed to
+be scrubbed when reclaimed. Assess these constraints before using the package
+with sensitive production keys. Equality comparisons on secret byte arrays are
+not guaranteed to run in constant time.
 
 Algorithm encodings and parameter sizes follow the exact upstream revisions
 listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and may differ from
