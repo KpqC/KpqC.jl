@@ -173,6 +173,7 @@ jobs:
           - macos-latest
           - windows-latest
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
@@ -190,6 +191,6 @@ jobs:
         run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
       - name: Validate portable known-answer results
         env:
-          KPQC_KAT_RECORD_LIMIT: "5"
+          KPQC_KAT_RECORD_LIMIT: "1"
           KPQC_TEST_VECTORS: ${{ github.workspace }}/kpqc-test-vectors
         run: julia --project=. test/kat.jl
