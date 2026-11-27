@@ -74,8 +74,10 @@ inbound = decapsulate(
 
 Keys, signatures, ciphertexts, messages, contexts, and shared secrets are
 represented as `Vector{UInt8}` values. Secret values are redacted from the
-default display of `KeyPair` and `EncapsulatedSecret`. Invalid argument lengths
-raise `DimensionMismatch`; invalid signatures return `false`.
+default display of `KeyPair` and `EncapsulatedSecret`. Incorrect key or
+ciphertext lengths raise `DimensionMismatch`. Contexts longer than 255 bytes
+raise `ArgumentError`. Signature verification returns `false` for invalid
+signatures, including signatures of the wrong length.
 
 NTRU+ rejects non-canonical public keys and invalid ciphertexts. SMAUG-T uses
 implicit rejection and returns a replacement secret for an invalid ciphertext;
